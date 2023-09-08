@@ -27,7 +27,7 @@ public class CashCardJsonTest {
     void setUp() {
         cashCards = Arrays.array(
                 new CashCard(99L, 123.45),
-                new CashCard(100L, 100.00),
+                new CashCard(100L, 1.00),
                 new CashCard(101L, 150.00));
     }
 
@@ -56,4 +56,49 @@ public class CashCardJsonTest {
         assertThat(json.parseObject(expected).id()).isEqualTo(99);
         assertThat(json.parseObject(expected).amount()).isEqualTo(123.45);
     }
+
+    @Test
+    void cashCardListSerializationTest() throws IOException{
+        assertThat(jsonList.write(cashCards)).isStrictlyEqualToJson("list.json"); // list.json is the expected output, cashCards is the actual output
+    }
+
+    @Test
+    void cashCardListDeserializationTest() throws IOException {
+        String expected = """
+                [
+                   { "id": 99, "amount": 123.45 },
+                   { "id": 100, "amount": 1.00 },
+                   { "id": 101, "amount": 150.00 }
+                ]
+                """;
+        assertThat(jsonList.parse(expected)).isEqualTo(cashCards); // cashCards is the expected output, expected is the actual output
+    }
+
 }
+
+/*
+json.write (Serialization):
+
+Purpose: Converts an object into its JSON representation.
+Direction: Object → JSON
+Usage Scenario: When you have an object (or a list of objects) and you want to convert it into a JSON string for purposes such as:
+Sending it as a response from a REST API.
+Saving it to a file or database in JSON format.
+Logging or debugging (to view the object's data in a readable format).
+In the provided code, json.write(cashCard) is used to serialize the cashCard object into its JSON representation. The result is then compared to an expected JSON string to verify the serialization process.
+
+json.parse (Deserialization):
+
+Purpose: Converts a JSON representation back into its corresponding object.
+Direction: JSON → Object
+Usage Scenario: When you receive a JSON string and you want to convert it into an object (or a list of objects) for purposes such as:
+Processing data received from a REST API request.
+Reading data from a file or database stored in JSON format.
+Constructing objects from configuration or settings stored in JSON.
+In the provided code, json.parse(expected) is used to deserialize the expected JSON string into a CashCard object. The result is then compared to an actual CashCard object to verify the deserialization process.
+
+In summary:
+
+Use json.write when you have an object and want to get its JSON representation.
+Use json.parse when you have a JSON string and want to get the corresponding object.
+ */

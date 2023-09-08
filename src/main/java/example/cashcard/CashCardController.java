@@ -38,8 +38,23 @@ public class CashCardController {
         URI locationOfNewCashCard = ucb.path("/cashcards/{id}").buildAndExpand(savedCashCard.id()).toUri();
         return ResponseEntity.created(locationOfNewCashCard).build();
     }
-}
 
+/*    @GetMapping()
+    public ResponseEntity<Iterable<CashCard>> findAll() {
+        return ResponseEntity.ok(cashCardRepository.findAll());
+    }*/
+
+
+    @GetMapping
+    public ResponseEntity<List<CashCard>> findAll(Pageable pageable) {
+        Page<CashCard> page = cashCardRepository.findAll(
+                PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize()
+                ));
+        return ResponseEntity.ok(page.getContent());
+    }
+}
 /*
 createCashCard
 UriComponentsBuilder ucb: This is a helper object provided by Spring that aids in building URIs.

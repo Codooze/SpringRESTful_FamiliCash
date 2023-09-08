@@ -18,7 +18,7 @@ import static org.springframework.test.annotation.DirtiesContext.*;
 
 // Annotation to indicate that this is a Spring Boot test and to run it with a random port
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
+//@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 class CashCardApplicationTests {
 
     @Autowired  // Autowiring the TestRestTemplate which is a convenience class for integration testing of RESTful services
@@ -47,7 +47,7 @@ class CashCardApplicationTests {
     }
 
     @Test
-    //@DirtiesContext
+    @DirtiesContext
     void shouldCreateANewCashCard() {
         CashCard newCashCard = new CashCard(null, 250.00);
         ResponseEntity<Void> createResponse = restTemplate.postForEntity("/cashcards", newCashCard, Void.class);
@@ -67,6 +67,35 @@ class CashCardApplicationTests {
         assertThat(amount).isEqualTo(250.00);
     }
 
+    @Test
+    void shouldReturnAllCashCardsWhenListIsRequested() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+        int cashCardCount = documentContext.read("$.length()");
+        assertThat(cashCardCount).isEqualTo(3);
+
+        JSONArray ids = documentContext.read("$..id");
+        assertThat(ids).containsExactlyInAnyOrder(99, 100, 101);
+
+        JSONArray amounts = documentContext.read("$..amount");
+        assertThat(amounts).containsExactlyInAnyOrder(123.45, 1.0, 150.00);
+
+
+    }
+
+    @Test
+    void shouldReturnAPageOfCashCards(){
+        ResponseEntity<String> response = restTemplate.getForEntity("/cashcards?page=0&size=1", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+        JSONArray page = documentContext.read("$[*]");
+
+        assertThat(page).hasSize(1); // page size is 1 because we specified size=1 in the request
+    }
 }
 
 /*
