@@ -57,3 +57,21 @@ Let's break down the method `testOnlyUsers` and its relation to the rest of the 
 ### Conclusion:
 
 The `testOnlyUsers` method is likely named for clarity, indicating that it's intended for testing purposes. In a real-world application, you'd typically replace the `InMemoryUserDetailsManager` with a more persistent store, like a database, to manage user details. The method is crucial for the authentication process, as it provides the user details that Spring Security relies on to authenticate users.
+
+## About CSRF
+As we learned in the accompanying lesson, protection against Cross-Site Request Forgery (CSRF, or "sea-surf") is an important aspect of HTTP-based APIs used by web-based applications.
+
+Yet, we've disabled CSRF via the .csrf().disable() line in SecurityConfig.filterChain.
+
+Why have we disabled CSRF?
+
+For the purposes of our Family Cash Card API, we're going to follow the guidance from the Spring Security team regarding non-browser clients:
+
+When should you use CSRF protection? Our recommendation is to use CSRF protection for any request that could be processed by a browser by normal users. If you are only creating a service that is used by non-browser clients, you will likely want to disable CSRF protection.
+
+If you would like to add CSRF security to our application, please review the testing support options below.
+
+MockMVC CSRF testing examples
+WebTestClient CSRF testing examples.
+A description of the Double-Submit Cookie Pattern.
+The Cash Card codebase, with CSRF protection enabled and implementing tests using the Double-Submit Cookie pattern: TestRestReplate CSRF testing examples.
