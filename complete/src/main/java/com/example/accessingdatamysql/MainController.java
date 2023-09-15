@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller	// This means that this class is a Controller
 @RequestMapping(path="/") // This means URL's start with /demo (after Application path)
@@ -18,22 +20,49 @@ public class MainController {
 
 	@PostMapping(path="/pais")
 	private ResponseEntity<Void> añadirPais(@RequestBody Pais nuevoPais, UriComponentsBuilder ucb) {
-		Pais pais = new Pais(nuevoPais.getPais(), nuevoPais.getMoneda());
+		String slug = createSlug(nuevoPais.getPais());
+		Pais pais = new Pais(slug, nuevoPais.getMoneda());
 		paisRepository.save(pais);
-		URI uriPais = ucb.path("/pais/").buildAndExpand(pais.getPais()).toUri();
+		URI uriPais = ucb.path("/pais/").buildAndExpand(pais.getPais()).toUri(); // esto es para el cliente y no se guarda en la base de datos
 		return ResponseEntity.created(uriPais).build();
+	}
+
+	//get two countries by name
+	@GetMapping(path="/pais/{pais1}/{pais2}")
+	public @ResponseBody ResponseEntity<Map<String, Pais>> getPais(@PathVariable String pais1, @PathVariable String pais2) {
+		Map<String, Pais> respuesta= new HashMap<>();
+
+		//busca en la base de datos usando el pais "slugged"
+
+		Pais pais = paisRepository.findByPais(pais1);
+		Pais otroPais = paisRepository.findByPais(pais2);
+		if (pais != null && otroPais != null) {
+			respuesta.put(pais.getPais(), pais);
+			respuesta.put(otroPais.getPais(), otroPais);
+			return ResponseEntity.ok(respuesta);
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+
+	public static String createSlug(String input) {
+		// Replace spaces with dashes and convert to lowercase
+		String slug = input.trim().replaceAll("\\s+", "-").toLowerCase();
+
+		// Remove special characters and keep alphanumeric characters and dashes
+		slug = slug.replaceAll("[^a-z0-9-]", "");
+
+		// Remove consecutive dashes
+		slug = slug.replaceAll("-+", "-");
+
+		// Remove leading and trailing dashes
+		slug = slug.replaceAll("^-|-$", "");
+
+		return slug;
 	}
 
 }
 /*
 TODO:
-👉 Añadir pais: (Añadir unos automaticamente al iniciar la aplicacion)
-	verbo a usar POST,
-		datos:
-			pais
-			moneda
-
-👉 get pais por nombre
-👉 get de dos paises por nombre
 👉	-crear metodo de comparacion de monedas
  */
